@@ -9,8 +9,6 @@ pub struct Message<Body> {
 
 #[derive(Serialize, Deserialize)]
 pub struct RequestBody<MessageBody> {
-    #[serde(rename = "type")]
-    pub type_: String,
     pub msg_id: u32,
     #[serde(flatten)]
     pub message_body: MessageBody,
@@ -18,27 +16,40 @@ pub struct RequestBody<MessageBody> {
 
 #[derive(Serialize, Deserialize)]
 pub struct ResponseBody<MessageBody> {
-    #[serde(rename = "type")]
-    pub type_: String,
     pub msg_id: u32,
     pub in_reply_to: u32,
     #[serde(flatten)]
     pub message_body: MessageBody,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Init {
-    pub node_id: String,
-    pub node_ids: Vec<String>,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
+enum InitPayload {
+    Init {
+        node_id: String,
+        node_ids: Vec<String>,
+    },
+    InitOk,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct InitOk {
-    dummy_value: u32,
-}
-
-impl InitOk {
-    pub fn new() -> Self {
-        Self { dummy_value: 0 }
+pub fn process_init(request: &str) -> (String, String) {
+    let request: Message<RequestBody<InitPayload>> = serde_json::from_str(&request).unwrap();
+    match request.body.message_body {
+        InitPayload::Init { node_id, node_ids } => {
+            let message_body = InitPayload::InitOk;
+            let body = ResponseBody {
+                msg_id: 1,
+                in_reply_to: request.body.msg_id,
+                message_body,
+            };
+            let response = Message {
+                src: request.dest,
+                dest: request.src,
+                body,
+            };
+            (serde_json::to_string(&response).unwrap(), node_id)
+        }
+        InitPayload::InitOk => ("".to_string(), "".to_string()),
     }
 }
