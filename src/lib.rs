@@ -32,13 +32,20 @@ pub fn process_init(request: &str) -> (String, String) {
         InitPayload::Init { node_id, node_ids } => {
             let message_body = InitPayload::InitOk;
             let response = create_response(&request, message_body, 0);
-            (serde_json::to_string(&response).unwrap(), node_id.to_string())
+            (
+                serde_json::to_string(&response).unwrap(),
+                node_id.to_string(),
+            )
         }
         InitPayload::InitOk => ("".to_string(), "".to_string()),
     }
 }
 
-pub fn create_response<Payload>(request: &Message<Body<Payload>>, payload: Payload, current_msg_id: u32) -> Message<Body<Payload>> {
+pub fn create_response<Payload>(
+    request: &Message<Body<Payload>>,
+    payload: Payload,
+    current_msg_id: u32,
+) -> Message<Body<Payload>> {
     let body = Body {
         msg_id: current_msg_id,
         in_reply_to: Some(request.body.msg_id),
