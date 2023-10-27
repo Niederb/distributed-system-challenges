@@ -43,10 +43,30 @@ fn main() {
             let request: Message<Body<Payload>> = serde_json::from_str(&request).unwrap();
             match &request.body.message_body {
                 Payload::Broadcast { message } => {
-                    messages.insert(*message);
+                    //messages.insert(*message);
                     let message_body = Payload::BroadcastOk;
                     let response = create_response(&request, message_body, node.current_msg_id);
                     node.send_message(response);
+                    if !messages.contains(&message) {
+                        messages.insert(*message);
+                        let neighbors = &my_topology[&node.node_id];
+                        for n in neighbors {
+                            if *n != request.src {
+                                let payload = Payload::Gossip { message: *message };
+                                let body = Body {
+                                    msg_id: node.current_msg_id,
+                                    in_reply_to: Some(request.body.msg_id),
+                                    message_body: payload,
+                                };
+                                let response = Message {
+                                    src: node.node_id.to_string(),
+                                    dest: n.to_string(),
+                                    body,
+                                };
+                                node.send_message(response);
+                            }
+                        }
+                    }
                 }
                 Payload::Read => {
                     let message_body = Payload::ReadOk {
@@ -74,8 +94,8 @@ fn main() {
                                     message_body: payload,
                                 };
                                 let response = Message {
-                                    src: request.dest.clone(),
-                                    dest: request.src.clone(),
+                                    src: node.node_id.to_string(),
+                                    dest: n.to_string(),
                                     body,
                                 };
                                 node.send_message(response);
