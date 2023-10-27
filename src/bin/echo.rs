@@ -44,7 +44,7 @@ struct Message<Body> {
 
 fn main() {
     let stdin = io::stdin();
-    let mut iterator = stdin.lock().lines();
+    let iterator = stdin.lock().lines();
     let mut initialized = false;
     for it in iterator {
         let request = it.unwrap();
