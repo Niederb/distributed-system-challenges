@@ -26,51 +26,70 @@ enum Payload {
     },
 }
 
+fn gossip_to_neighbors() {
+    
+}
+
 fn main() {
     let stdin = io::stdin();
     let iterator = stdin.lock().lines();
     let mut initialized = false;
-    let mut node_id = "Hello World".to_string();
-    let mut current_id = 0;
+    let mut node = Node::new("".to_string());
     let mut messages = HashSet::<usize>::new();
     let mut my_topology = HashMap::<String, Vec<String>>::new();
     for it in iterator {
         let request = it.unwrap();
-        let response = if initialized {
+        if initialized {
             let request: Message<Body<Payload>> = serde_json::from_str(&request).unwrap();
-            let response = match &request.body.message_body {
+            match &request.body.message_body {
                 Payload::Broadcast { message } => {
                     messages.insert(*message);
                     let message_body = Payload::BroadcastOk;
-                    let response = create_response(&request, message_body, current_id);
-                    serde_json::to_string(&response).unwrap()
+                    let response = create_response(&request, message_body, node.current_msg_id);
+                    node.send_message(response);
                 }
                 Payload::Read => {
                     let message_body = Payload::ReadOk {
                         messages: messages.clone(),
                     };
-                    let response = create_response(&request, message_body, current_id);
-                    serde_json::to_string(&response).unwrap()
+                    let response = create_response(&request, message_body, node.current_msg_id);
+                    node.send_message(response);
                 }
                 Payload::Topology { topology } => {
                     my_topology.extend(topology.clone());
                     let message_body = Payload::TopologyOk;
-                    let response = create_response(&request, message_body, current_id);
-                    serde_json::to_string(&response).unwrap()
+                    let response = create_response(&request, message_body, node.current_msg_id);
+                    node.send_message(response);
                 }
-                Payload::Gossip { message } => "".to_string(),
-                Payload::ReadOk { .. } => "".to_string(),
-                Payload::TopologyOk => "".to_string(),
-                Payload::BroadcastOk => "".to_string(),
+                Payload::Gossip { message } => {
+                    if !messages.contains(&message) {
+                        messages.insert(*message);
+                        let neighbors = &my_topology[&node.node_id];
+                        for n in neighbors {
+                            if *n != request.src {
+                                let payload = Payload::Gossip { message: *message };
+                                let body = Body {
+                                    msg_id: node.current_msg_id,
+                                    in_reply_to: Some(request.body.msg_id),
+                                    message_body: payload,
+                                };
+                                let response = Message {
+                                    src: request.dest.clone(),
+                                    dest: request.src.clone(),
+                                    body,
+                                };
+                                node.send_message(response);
+                            }
+                        }
+                    }
+                },
+                Payload::ReadOk { .. } => (),
+                Payload::TopologyOk => (),
+                Payload::BroadcastOk => (),
             };
-            response
         } else {
-            let (response, id) = process_init(&request);
-            node_id = id;
+            node = process_init(&request);
             initialized = true;
-            response
         };
-        println!("{}", response);
-        current_id += 1;
     }
 }

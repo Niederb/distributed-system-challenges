@@ -26,7 +26,24 @@ enum InitPayload {
     InitOk,
 }
 
-pub fn process_init(request: &str) -> (String, String) {
+pub struct Node {
+    pub node_id: String,
+    pub current_msg_id: u32,
+}
+
+impl Node {
+    pub fn new(node_id: String) -> Self {
+        Self { node_id, current_msg_id: 0 }
+    }
+
+    pub fn send_message<Payload: Serialize>(&mut self, message: Message<Body<Payload>>) {
+        let message = serde_json::to_string(&message).unwrap();
+        println!("{}", message);
+        self.current_msg_id += 1;
+    }
+}
+
+pub fn process_init(request: &str) -> Node {
     let request: Message<Body<InitPayload>> = serde_json::from_str(&request).unwrap();
     match &request.body.message_body {
         InitPayload::Init { node_id, node_ids } => {
@@ -35,9 +52,12 @@ pub fn process_init(request: &str) -> (String, String) {
             (
                 serde_json::to_string(&response).unwrap(),
                 node_id.to_string(),
-            )
+            );
+            let mut n = Node::new(node_id.to_string());
+            n.send_message(response);
+            n
         }
-        InitPayload::InitOk => ("".to_string(), "".to_string()),
+        InitPayload::InitOk => Node::new("".to_string()),
     }
 }
 

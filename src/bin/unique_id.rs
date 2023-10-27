@@ -15,24 +15,19 @@ fn main() {
     let stdin = io::stdin();
     let iterator = stdin.lock().lines();
     let mut initialized = false;
-    let mut node_id = "Hello World".to_string();
-    let mut current_id = 0;
+    let mut node = Node::new("".to_string());
     for it in iterator {
         let request = it.unwrap();
-        let response = if initialized {
+        if initialized {
             let request: Message<Body<Payload>> = serde_json::from_str(&request).unwrap();
-            let id = format!("{}-{}", node_id, current_id);
+            let id = format!("{}-{}", node.node_id, node.current_msg_id);
 
             let message_body = Payload::GenerateOk { id };
-            let response = create_response(&request, message_body, current_id);
-            serde_json::to_string(&response).unwrap()
+            let response = create_response(&request, message_body, node.current_msg_id);
+            node.send_message(response);
         } else {
-            let (response, id) = process_init(&request);
-            node_id = id;
+            node = process_init(&request);
             initialized = true;
-            response
         };
-        println!("{}", response);
-        current_id += 1;
     }
 }

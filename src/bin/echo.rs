@@ -15,7 +15,7 @@ fn main() {
     let stdin = io::stdin();
     let iterator = stdin.lock().lines();
     let mut initialized = false;
-    let mut node_id = "Hello World".to_string();
+    let mut node = Node::new("".to_string());
     let mut current_id = 0;
     for it in iterator {
         let request = it.unwrap();
@@ -25,17 +25,13 @@ fn main() {
                 Payload::Echo { echo } => {
                     let message_body = Payload::EchoOk { echo: echo.clone() };
                     let response = create_response(&request, message_body, current_id);
-                    serde_json::to_string(&response).unwrap()
+                    node.send_message(response);
                 }
-                Payload::EchoOk { echo } => "".to_string(),
+                Payload::EchoOk { echo } => (),
             }
         } else {
-            let (response, id) = process_init(&request);
-            node_id = id;
+            node = process_init(&request);
             initialized = true;
-            response
         };
-        println!("{}", response);
-        current_id += 1;
     }
 }
