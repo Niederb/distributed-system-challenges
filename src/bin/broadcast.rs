@@ -1,51 +1,9 @@
 use distributed_system_challenges::*;
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io;
 use std::io::BufRead;
-use std::collections::HashSet;
-
-#[derive(Serialize, Deserialize)]
-struct Broadcast {
-    message: u32,
-}
-
-#[derive(Serialize, Deserialize)]
-struct BroadcastOk{
-    dummy_value: Option<u32>,
-}
-
-impl BroadcastOk {
-    pub fn new() -> Self {
-        Self { dummy_value: None }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-struct Read {
-    dummy_value: Option<u32>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ReadOk {
-    messages: Vec<u32>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Topology {
-    topology: HashMap<String, Vec<String>>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct TopologyOk {
-    dummy_value: Option<u32>,
-}
-
-impl TopologyOk {
-    pub fn new() -> Self {
-        Self { dummy_value: None }
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 enum Payload {
@@ -75,10 +33,9 @@ fn main() {
     for it in iterator {
         let request = it.unwrap();
         let response = if initialized {
-            println!("{}", request);
             let request: Message<Payload> = serde_json::from_str(&request).unwrap();
-            
-            let body = BroadcastOk::new();
+
+            let body = Payload::BroadcastOk;
             let response = Message {
                 src: request.dest,
                 dest: request.src,

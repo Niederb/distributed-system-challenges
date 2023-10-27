@@ -8,16 +8,9 @@ pub struct Message<Body> {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct RequestBody<MessageBody> {
+pub struct Body<MessageBody> {
     pub msg_id: u32,
-    #[serde(flatten)]
-    pub message_body: MessageBody,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ResponseBody<MessageBody> {
-    pub msg_id: u32,
-    pub in_reply_to: u32,
+    pub in_reply_to: Option<u32>,
     #[serde(flatten)]
     pub message_body: MessageBody,
 }
@@ -34,13 +27,13 @@ enum InitPayload {
 }
 
 pub fn process_init(request: &str) -> (String, String) {
-    let request: Message<RequestBody<InitPayload>> = serde_json::from_str(&request).unwrap();
+    let request: Message<Body<InitPayload>> = serde_json::from_str(&request).unwrap();
     match request.body.message_body {
         InitPayload::Init { node_id, node_ids } => {
             let message_body = InitPayload::InitOk;
-            let body = ResponseBody {
+            let body = Body {
                 msg_id: 1,
-                in_reply_to: request.body.msg_id,
+                in_reply_to: Some(request.body.msg_id),
                 message_body,
             };
             let response = Message {

@@ -20,13 +20,13 @@ fn main() {
     for it in iterator {
         let request = it.unwrap();
         let response = if initialized {
-            let request: Message<RequestBody<Payload>> = serde_json::from_str(&request).unwrap();
+            let request: Message<Body<Payload>> = serde_json::from_str(&request).unwrap();
             match request.body.message_body {
                 Payload::Echo { echo } => {
                     let message_body = Payload::EchoOk { echo };
-                    let body = ResponseBody {
+                    let body = Body {
                         msg_id: 1,
-                        in_reply_to: request.body.msg_id,
+                        in_reply_to: Some(request.body.msg_id),
                         message_body,
                     };
                     let response = Message {
@@ -45,5 +45,6 @@ fn main() {
             response
         };
         println!("{}", response);
+        current_id += 1;
     }
 }
