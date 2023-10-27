@@ -4,35 +4,38 @@ use std::io::BufRead;
 
 #[derive(Serialize, Deserialize)]
 struct Init {
-    #[serde(rename = "type")]
-    type_: String,
-    msg_id: u32,
     node_id: String,
     node_ids: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct InitOk {
-    #[serde(rename = "type")]
-    type_: String,
-    in_reply_to: u32,
-}
+struct InitOk;
 
 #[derive(Serialize, Deserialize)]
 struct Echo {
-    #[serde(rename = "type")]
-    type_: String,
-    msg_id: u32,
     echo: String,
 }
 
 #[derive(Serialize, Deserialize)]
 struct EchoOk {
-    #[serde(rename = "type")]
+    echo: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct RequestBody<MessageBody> {
     type_: String,
     msg_id: u32,
+    #[serde(flatten)]
+    message_body: MessageBody,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ResponseBody<MessageBody> {
+    type_: String,
+    msg_id: u32,
+    #[serde(flatten)]
+    message_body: MessageBody,
     in_reply_to: u32,
-    echo: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -49,12 +52,15 @@ fn main() {
     for it in iterator {
         let request = it.unwrap();
         let response = if initialized {
-            let request: Message<Echo> = serde_json::from_str(&request).unwrap();
-            let body = EchoOk {
-                type_: "echo_ok".to_string(),
+            let request: Message<RequestBody<Echo>> = serde_json::from_str(&request).unwrap();
+            let message_body = EchoOk {
+                echo: request.body.message_body.echo,
+            };
+            let body = ResponseBody {
                 msg_id: 1,
+                type_: "echo_ok".to_string(),
                 in_reply_to: request.body.msg_id,
-                echo: request.body.echo,
+                message_body,
             };
             let response = Message {
                 src: request.dest,
@@ -63,10 +69,13 @@ fn main() {
             };
             serde_json::to_string(&response).unwrap()
         } else {
-            let request: Message<Init> = serde_json::from_str(&request).unwrap();
-            let body = InitOk {
+            let request: Message<RequestBody<Init>> = serde_json::from_str(&request).unwrap();
+            let message_body = InitOk;
+            let body = ResponseBody {
+                msg_id: 1,
                 type_: "init_ok".to_string(),
                 in_reply_to: request.body.msg_id,
+                message_body,
             };
             let response = Message {
                 src: request.dest,

@@ -58,7 +58,7 @@ fn main() {
                 type_: "generate_ok".to_string(),
                 msg_id: 1,
                 in_reply_to: request.body.msg_id,
-                id: id
+                id: id,
             };
             let response = Message {
                 src: request.dest,
