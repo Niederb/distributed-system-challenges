@@ -21,19 +21,10 @@ fn main() {
         let request = it.unwrap();
         let response = if initialized {
             let request: Message<Body<Payload>> = serde_json::from_str(&request).unwrap();
-            match request.body.message_body {
+            match &request.body.message_body {
                 Payload::Echo { echo } => {
-                    let message_body = Payload::EchoOk { echo };
-                    let body = Body {
-                        msg_id: current_id,
-                        in_reply_to: Some(request.body.msg_id),
-                        message_body,
-                    };
-                    let response = Message {
-                        src: request.dest,
-                        dest: request.src,
-                        body,
-                    };
+                    let message_body = Payload::EchoOk { echo: echo.clone() };
+                    let response = create_response(&request, message_body, current_id);
                     serde_json::to_string(&response).unwrap()
                 }
                 Payload::EchoOk { echo } => "".to_string(),

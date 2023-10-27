@@ -41,46 +41,19 @@ fn main() {
                 Payload::Broadcast { message } => {
                     messages.insert(message);
                     let message_body = Payload::BroadcastOk;
-                    let body = Body {
-                        msg_id: current_id,
-                        in_reply_to: Some(request.body.msg_id),
-                        message_body,
-                    };
-                    let response = Message {
-                        src: request.dest,
-                        dest: request.src,
-                        body,
-                    };
+                    let response = create_response(&request, message_body, current_id);
                     serde_json::to_string(&response).unwrap()
                 }
                 Payload::Read => {
                     let message_body = Payload::ReadOk {
                         messages: messages.clone(),
                     };
-                    let body = Body {
-                        msg_id: current_id,
-                        in_reply_to: Some(request.body.msg_id),
-                        message_body,
-                    };
-                    let response = Message {
-                        src: request.dest,
-                        dest: request.src,
-                        body,
-                    };
+                    let response = create_response(&request, message_body, current_id);
                     serde_json::to_string(&response).unwrap()
                 }
                 Payload::Topology { .. }=> {
                     let message_body = Payload::TopologyOk;
-                    let body = Body {
-                        msg_id: current_id,
-                        in_reply_to: Some(request.body.msg_id),
-                        message_body,
-                    };
-                    let response = Message {
-                        src: request.dest,
-                        dest: request.src,
-                        body,
-                    };
+                    let response = create_response(&request, message_body, current_id);
                     serde_json::to_string(&response).unwrap()
                 }
                 Payload::ReadOk { .. } => "".to_string(),

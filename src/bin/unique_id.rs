@@ -24,16 +24,7 @@ fn main() {
             let id = format!("{}-{}", node_id, current_id);
 
             let message_body = Payload::GenerateOk { id };
-            let body = Body {
-                msg_id: current_id,
-                in_reply_to: Some(request.body.msg_id),
-                message_body,
-            };
-            let response = Message {
-                src: request.dest,
-                dest: request.src,
-                body,
-            };
+            let response = create_response(&request, message_body, current_id);
             serde_json::to_string(&response).unwrap()
         } else {
             let (response, id) = process_init(&request);
