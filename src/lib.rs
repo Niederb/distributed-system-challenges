@@ -26,3 +26,20 @@ pub struct ResponseBody<MessageBody> {
     pub message_body: MessageBody,
 }
 
+
+#[derive(Serialize, Deserialize)]
+pub struct Init {
+    pub node_id: String,
+    pub node_ids: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct InitOk {
+    dummy_value: u32
+}
+
+impl InitOk {
+    pub fn new() -> Self {
+        Self { dummy_value: 0 }
+    }
+}

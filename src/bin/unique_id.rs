@@ -4,23 +4,6 @@ use std::io::BufRead;
 use distributed_system_challenges::*;
 
 #[derive(Serialize, Deserialize)]
-struct Init {
-    node_id: String,
-    node_ids: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct InitOk {
-    dummy_value: u32
-}
-
-impl InitOk {
-    fn new() -> Self {
-        Self { dummy_value: 0 }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
 struct Generate {
     dummy_value: Option<u32>
 }
