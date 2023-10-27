@@ -1,8 +1,7 @@
+use distributed_system_challenges::*;
 use serde::{Deserialize, Serialize};
 use std::io;
 use std::io::BufRead;
-use distributed_system_challenges::*;
-
 
 #[derive(Serialize, Deserialize)]
 struct Echo {

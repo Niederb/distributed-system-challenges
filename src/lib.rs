@@ -26,7 +26,6 @@ pub struct ResponseBody<MessageBody> {
     pub message_body: MessageBody,
 }
 
-
 #[derive(Serialize, Deserialize)]
 pub struct Init {
     pub node_id: String,
@@ -35,7 +34,7 @@ pub struct Init {
 
 #[derive(Serialize, Deserialize)]
 pub struct InitOk {
-    dummy_value: u32
+    dummy_value: u32,
 }
 
 impl InitOk {

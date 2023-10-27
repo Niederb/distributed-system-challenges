@@ -1,11 +1,11 @@
+use distributed_system_challenges::*;
 use serde::{Deserialize, Serialize};
 use std::io;
 use std::io::BufRead;
-use distributed_system_challenges::*;
 
 #[derive(Serialize, Deserialize)]
 struct Generate {
-    dummy_value: Option<u32>
+    dummy_value: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize)]
