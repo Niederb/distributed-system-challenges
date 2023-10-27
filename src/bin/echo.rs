@@ -25,7 +25,7 @@ fn main() {
                 Payload::Echo { echo } => {
                     let message_body = Payload::EchoOk { echo };
                     let body = Body {
-                        msg_id: 1,
+                        msg_id: current_id,
                         in_reply_to: Some(request.body.msg_id),
                         message_body,
                     };
