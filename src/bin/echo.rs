@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::io;
 use std::io::BufRead;
+use distributed_system_challenges::{Message, RequestBody, ResponseBody};
 
 #[derive(Serialize, Deserialize)]
 struct Init {
@@ -19,30 +20,6 @@ struct Echo {
 #[derive(Serialize, Deserialize)]
 struct EchoOk {
     echo: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct RequestBody<MessageBody> {
-    type_: String,
-    msg_id: u32,
-    #[serde(flatten)]
-    message_body: MessageBody,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ResponseBody<MessageBody> {
-    type_: String,
-    msg_id: u32,
-    #[serde(flatten)]
-    message_body: MessageBody,
-    in_reply_to: u32,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Message<Body> {
-    src: String,
-    dest: String,
-    body: Body,
 }
 
 fn main() {
