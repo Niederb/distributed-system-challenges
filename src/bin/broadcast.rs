@@ -26,10 +26,6 @@ enum Payload {
     },
 }
 
-fn gossip_to_neighbors() {
-    
-}
-
 fn main() {
     let stdin = io::stdin();
     let iterator = stdin.lock().lines();
@@ -47,7 +43,7 @@ fn main() {
                     let message_body = Payload::BroadcastOk;
                     let response = create_response(&request, message_body, node.current_msg_id);
                     node.send_message(response);
-                    if !messages.contains(&message) {
+                    if !messages.contains(message) {
                         messages.insert(*message);
                         let neighbors = &my_topology[&node.node_id];
                         for n in neighbors {
@@ -82,7 +78,7 @@ fn main() {
                     node.send_message(response);
                 }
                 Payload::Gossip { message } => {
-                    if !messages.contains(&message) {
+                    if !messages.contains(message) {
                         messages.insert(*message);
                         let neighbors = &my_topology[&node.node_id];
                         for n in neighbors {
@@ -102,7 +98,7 @@ fn main() {
                             }
                         }
                     }
-                },
+                }
                 Payload::ReadOk { .. } => (),
                 Payload::TopologyOk => (),
                 Payload::BroadcastOk => (),

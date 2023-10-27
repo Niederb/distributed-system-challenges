@@ -16,18 +16,17 @@ fn main() {
     let iterator = stdin.lock().lines();
     let mut initialized = false;
     let mut node = Node::new("".to_string());
-    let mut current_id = 0;
     for it in iterator {
         let request = it.unwrap();
-        let response = if initialized {
+        if initialized {
             let request: Message<Body<Payload>> = serde_json::from_str(&request).unwrap();
             match &request.body.message_body {
                 Payload::Echo { echo } => {
                     let message_body = Payload::EchoOk { echo: echo.clone() };
-                    let response = create_response(&request, message_body, current_id);
+                    let response = create_response(&request, message_body, node.current_msg_id);
                     node.send_message(response);
                 }
-                Payload::EchoOk { echo } => (),
+                Payload::EchoOk { .. } => (),
             }
         } else {
             node = process_init(&request);

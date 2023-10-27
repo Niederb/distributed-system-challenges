@@ -33,7 +33,10 @@ pub struct Node {
 
 impl Node {
     pub fn new(node_id: String) -> Self {
-        Self { node_id, current_msg_id: 0 }
+        Self {
+            node_id,
+            current_msg_id: 0,
+        }
     }
 
     pub fn send_message<Payload: Serialize>(&mut self, message: Message<Body<Payload>>) {
@@ -44,15 +47,11 @@ impl Node {
 }
 
 pub fn process_init(request: &str) -> Node {
-    let request: Message<Body<InitPayload>> = serde_json::from_str(&request).unwrap();
+    let request: Message<Body<InitPayload>> = serde_json::from_str(request).unwrap();
     match &request.body.message_body {
-        InitPayload::Init { node_id, node_ids } => {
+        InitPayload::Init { node_id, .. } => {
             let message_body = InitPayload::InitOk;
             let response = create_response(&request, message_body, 0);
-            (
-                serde_json::to_string(&response).unwrap(),
-                node_id.to_string(),
-            );
             let mut n = Node::new(node_id.to_string());
             n.send_message(response);
             n
@@ -71,10 +70,9 @@ pub fn create_response<Payload>(
         in_reply_to: Some(request.body.msg_id),
         message_body: payload,
     };
-    let response = Message {
+    Message {
         src: request.dest.clone(),
         dest: request.src.clone(),
         body,
-    };
-    response
+    }
 }
