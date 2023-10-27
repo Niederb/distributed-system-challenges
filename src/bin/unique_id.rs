@@ -19,20 +19,19 @@ struct InitOk {
 }
 
 #[derive(Serialize, Deserialize)]
-struct Echo {
+struct Generate {
     #[serde(rename = "type")]
     type_: String,
     msg_id: u32,
-    echo: String,
 }
 
 #[derive(Serialize, Deserialize)]
-struct EchoOk {
+struct GenerateOk {
     #[serde(rename = "type")]
     type_: String,
     msg_id: u32,
     in_reply_to: u32,
-    echo: String,
+    id: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -46,15 +45,20 @@ fn main() {
     let stdin = io::stdin();
     let iterator = stdin.lock().lines();
     let mut initialized = false;
+    let mut node_id = "Hello World".to_string();
+    let mut current_id = 0;
     for it in iterator {
         let request = it.unwrap();
         let response = if initialized {
-            let request: Message<Echo> = serde_json::from_str(&request).unwrap();
-            let body = EchoOk {
-                type_: "echo_ok".to_string(),
+            println!("{}", request);
+            let request: Message<Generate> = serde_json::from_str(&request).unwrap();
+            let id = format!("{}-{}", node_id, current_id);
+            current_id += 1;
+            let body = GenerateOk {
+                type_: "generate_ok".to_string(),
                 msg_id: 1,
                 in_reply_to: request.body.msg_id,
-                echo: request.body.echo,
+                id: id
             };
             let response = Message {
                 src: request.dest,
@@ -64,6 +68,7 @@ fn main() {
             serde_json::to_string(&response).unwrap()
         } else {
             let request: Message<Init> = serde_json::from_str(&request).unwrap();
+            node_id = request.body.node_id;
             let body = InitOk {
                 type_: "init_ok".to_string(),
                 in_reply_to: request.body.msg_id,
