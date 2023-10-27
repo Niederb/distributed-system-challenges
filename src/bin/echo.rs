@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::io;
 use std::io::BufRead;
-use distributed_system_challenges::{Message, RequestBody, ResponseBody};
+use distributed_system_challenges::*;
 
 #[derive(Serialize, Deserialize)]
 struct Init {
@@ -10,7 +10,15 @@ struct Init {
 }
 
 #[derive(Serialize, Deserialize)]
-struct InitOk;
+struct InitOk {
+    dummy_value: u32
+}
+
+impl InitOk {
+    fn new() -> Self {
+        Self { dummy_value: 0 }
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 struct Echo {
@@ -47,7 +55,7 @@ fn main() {
             serde_json::to_string(&response).unwrap()
         } else {
             let request: Message<RequestBody<Init>> = serde_json::from_str(&request).unwrap();
-            let message_body = InitOk;
+            let message_body = InitOk::new();
             let body = ResponseBody {
                 msg_id: 1,
                 type_: "init_ok".to_string(),
